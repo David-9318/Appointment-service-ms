@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AppointmentsController } from '../src/appointments/appointments.controller';
@@ -7,6 +7,7 @@ import { AppointmentsService } from '../src/appointments/appointments.service';
 import { Appointment } from '../src/appointments/entities/appointment.entity';
 import { AppointmentStatus } from '../src/appointments/enums/appointment-status.enum';
 import { PaymentStatus } from '../src/appointments/enums/payment-status.enum';
+import { getValidationPipe } from '../src/common/validation/get-validation-pipe';
 
 describe('POST /appointments — validación date & time (e2e)', () => {
   let app: INestApplication;
@@ -38,13 +39,7 @@ describe('POST /appointments — validación date & time (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
+    app.useGlobalPipes(getValidationPipe());
     await app.init();
   });
 
@@ -52,26 +47,36 @@ describe('POST /appointments — validación date & time (e2e)', () => {
     await app.close();
   });
 
+  function tomorrowYyyyMmDd(): string {
+    const t = new Date();
+    t.setDate(t.getDate() + 1);
+    const y = t.getFullYear();
+    const m = String(t.getMonth() + 1).padStart(2, '0');
+    const d = String(t.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
   const validBody = () => ({
     patientId: 'patient-uuid',
     professionalId: 'professional-uuid',
-    date: '2026-05-04',
+    date: tomorrowYyyyMmDd(),
     time: '14:30',
     reason: 'Chequeo general',
   });
 
-  it('201 cuando date es ISO YYYY-MM-DD y time coincide con /^\\d{2}:\\d{2}$/', () => {
+  it('201 cuando date es YYYY-MM-DD válida (mañana) y time HH:mm', () => {
+    const date = tomorrowYyyyMmDd();
     return request(app.getHttpServer())
       .post('/appointments')
       .send(validBody())
       .expect(201)
       .expect((res) => {
-        expect(res.body.date).toBe('2026-05-04');
+        expect(res.body.date).toBe(date);
         expect(res.body.time).toBe('14:30');
       });
   });
 
-  it('400 cuando date no cumple @IsDateString (ej. DD/MM/YYYY)', () => {
+  it('400 cuando date no es calendario YYYY-MM-DD (ej. DD/MM/YYYY)', () => {
     return request(app.getHttpServer())
       .post('/appointments')
       .send({ ...validBody(), date: '04/05/2026' })
@@ -90,5 +95,24 @@ describe('POST /appointments — validación date & time (e2e)', () => {
       .post('/appointments')
       .send({ ...validBody(), time: '14h30' })
       .expect(400);
+  });
+
+  it('400 cuando date es un día inexistente (ej. 2026-02-31)', () => {
+    return request(app.getHttpServer())
+      .post('/appointments')
+      .send({ ...validBody(), date: '2026-02-31' })
+      .expect(400);
+  });
+
+  it('400 cuando date es anterior a hoy', () => {
+    return request(app.getHttpServer())
+      .post('/appointments')
+      .send({ ...validBody(), date: '2000-01-01' })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.messages?.some((m: string) => m.includes('anterior'))).toBe(
+          true,
+        );
+      });
   });
 });
