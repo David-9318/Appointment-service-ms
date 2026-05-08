@@ -71,8 +71,9 @@ describe('POST /appointments — validación date & time (e2e)', () => {
       .send(validBody())
       .expect(201)
       .expect((res) => {
-        expect(res.body.date).toBe(date);
-        expect(res.body.time).toBe('14:30');
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.date).toBe(date);
+        expect(res.body.data.time).toBe('14:30');
       });
   });
 

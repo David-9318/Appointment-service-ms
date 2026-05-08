@@ -15,33 +15,39 @@ export class AppointmentsService {
   ) {}
 
   async findAll(filters: FilterAppointmentDto): Promise<Appointment[]> {
-    const query = this.appointmentsRepository
-      .createQueryBuilder('appointment');
+    const query =
+      this.appointmentsRepository.createQueryBuilder('appointment');
 
-    if (filters.patientId)
-      query.andWhere('appointment.patientId = :patientId',
-        { patientId: filters.patientId });
+    if (filters.patientId) {
+      query.andWhere('appointment.patientId = :patientId', {
+        patientId: filters.patientId,
+      });
+    }
 
-    if (filters.professionalId)
-      query.andWhere('appointment.professionalId = :professionalId',
-        { professionalId: filters.professionalId });
+    if (filters.professionalId) {
+      query.andWhere('appointment.professionalId = :professionalId', {
+        professionalId: filters.professionalId,
+      });
+    }
 
-    if (filters.date)
-      query.andWhere('appointment.date = :date',
-        { date: filters.date });
+    if (filters.date) {
+      query.andWhere('appointment.date = :date', { date: filters.date });
+    }
 
-    if (filters.status)
-      query.andWhere('appointment.status = :status',
-        { status: filters.status });
+    if (filters.status) {
+      query.andWhere('appointment.status = :status', {
+        status: filters.status,
+      });
+    }
 
     return query.getMany();
   }
 
   async findOne(id: string): Promise<Appointment> {
-    const appointment = await this.appointmentsRepository
-      .findOneBy({ id });
-    if (!appointment)
-      throw new NotFoundException(`Appointment ${id} not found`);
+    const appointment = await this.appointmentsRepository.findOneBy({ id });
+    if (!appointment) {
+      throw new NotFoundException('Cita no encontrada');
+    }
     return appointment;
   }
 
@@ -50,13 +56,19 @@ export class AppointmentsService {
     return this.appointmentsRepository.save(appointment);
   }
 
-  async update(id: string, dto: UpdateAppointmentDto): Promise<Appointment> {
+  async update(
+    id: string,
+    dto: UpdateAppointmentDto,
+  ): Promise<Appointment> {
     await this.findOne(id);
     await this.appointmentsRepository.update(id, dto);
     return this.findOne(id);
   }
 
-  async updateStatus(id: string, dto: UpdateStatusDto): Promise<Appointment> {
+  async updateStatus(
+    id: string,
+    dto: UpdateStatusDto,
+  ): Promise<Appointment> {
     await this.findOne(id);
     await this.appointmentsRepository.update(id, { status: dto.status });
     return this.findOne(id);

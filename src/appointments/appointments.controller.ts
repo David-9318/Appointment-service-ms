@@ -19,32 +19,50 @@ export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
 
   @Post()
-  create(@Body() dto: CreateAppointmentDto) {
-    return this.appointmentsService.create(dto);
+  async create(@Body() dto: CreateAppointmentDto) {
+    const data = await this.appointmentsService.create(dto);
+    return {
+      success: true,
+      message: 'Cita creada correctamente',
+      data,
+    };
   }
 
   @Get()
-  findAll(@Query() filters: FilterAppointmentDto) {
-    return this.appointmentsService.findAll(filters);
+  async findAll(@Query() filters: FilterAppointmentDto) {
+    const data = await this.appointmentsService.findAll(filters);
+    return { success: true, data };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.appointmentsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const data = await this.appointmentsService.findOne(id);
+    return { success: true, data };
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateAppointmentDto) {
-    return this.appointmentsService.update(id, dto);
+  async update(@Param('id') id: string, @Body() dto: UpdateAppointmentDto) {
+    const data = await this.appointmentsService.update(id, dto);
+    return {
+      success: true,
+      message: 'Cita actualizada correctamente',
+      data,
+    };
   }
 
   @Patch(':id/status')
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateStatusDto) {
-    return this.appointmentsService.updateStatus(id, dto);
+  async updateStatus(@Param('id') id: string, @Body() dto: UpdateStatusDto) {
+    const data = await this.appointmentsService.updateStatus(id, dto);
+    return {
+      success: true,
+      message: 'Estado actualizado correctamente',
+      data,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.appointmentsService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.appointmentsService.remove(id);
+    return { success: true, message: 'Cita eliminada correctamente' };
   }
 }
