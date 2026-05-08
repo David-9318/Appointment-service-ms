@@ -1,14 +1,7 @@
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
-
-export enum AppointmentStatus {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  CANCELLED = 'cancelled',
-  COMPLETED = 'completed',
-}
+import { IsEnum } from 'class-validator';
+import { AppointmentStatus } from '../enums/appointment-status.enum';
 
 export class UpdateStatusDto {
   @IsEnum(AppointmentStatus)
-  @IsNotEmpty()
   status: AppointmentStatus;
 }
