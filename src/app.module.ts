@@ -15,6 +15,7 @@ import { AppService } from './app.service';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       synchronize: true,
+      autoLoadEntities: true,
     }),
   ],
   controllers: [AppController],
