@@ -1,35 +1,35 @@
 version: '3.8'
 
 services:
-  app:
+  appointments-service:
     build: .
     ports:
-      - "3000:3000"
+      - '4001:4001'
     environment:
       - NODE_ENV=development
-      - PORT=3000
-      - DB_HOST=postgres
+      - PORT=4001
+      - DB_HOST=appointments-postgres
       - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_NAME=appointments_db
     depends_on:
-      - postgres
+      - appointments-postgres
     volumes:
       - .:/app
       - /app/node_modules
     command: npm run start:dev
 
-  postgres:
+  appointments-postgres:
     image: postgres:15-alpine
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=appointments_db
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - appointments_postgres_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  appointments_postgres_data:
